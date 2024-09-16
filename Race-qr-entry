@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator for Race Participants</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <h1>Race QR Code Generator</h1>
+  
+  <!-- Form to input participant details -->
+  <form id="participant-form">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" required><br><br>
+
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <label for="race-id">Race ID:</label><br>
+    <input type="text" id="race-id" name="race-id" required><br><br>
+
+    <button type="submit">Generate QR Code</button>
+  </form>
+
+  <div id="qrcode"></div>
+
+  <script>
+    const form = document.getElementById('participant-form');
+    const qrCodeDiv = document.getElementById('qrcode');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // Get the participant details
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const raceID = document.getElementById('race-id').value;
+
+      // Generate a unique profile URL or data string (can be customized)
+      const profileURL = `https://your-race-website.com/profile?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&raceID=${encodeURIComponent(raceID)}`;
+
+      // Generate the QR code for the profile URL
+      qrCodeDiv.innerHTML = '';
+      new QRCode(qrCodeDiv, profileURL);
+
+      // Send the data to Google Sheets
+      logParticipantToGoogleSheet(name, email, raceID);
+    });
+
+    // Function to log participant details to Google Sheets
+    function logParticipantToGoogleSheet(name, email, raceID) {
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwJSCtEykeCTNdTXhSXrGSy3d1bmJEIHfwk_Bp8iqho1Wec02Of7e8qd8Qms_NPw3MDqA/exec';
+
+  fetch(scriptURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      'name': name,
+      'email': email,
+      'raceID': raceID
+    })
+  })
+  .then(response => response.text())  // Convert the response to text
+  .then(result => console.log('Success!', result))  // Log the success message
+  .catch(error => console.error('Error!', error.message));
+}
+  </script>
+
+</body>
+</html>
